@@ -1,0 +1,20 @@
+site_name: Generative Sanat
+repo_url: https://github.com/cobanov/
+repo_name: "Visit my GitHub"
+site_author: "Mert Cobanov"
+edit_uri: ""
+nav:
+  - Hello: index.md
+  - What is Latent Diffusion: ldm.md
+  - ViT Visual Transformers: vit.md
+  - VAE: vae.md
+  - Scheduler: scheduler.md
+  - Stable Diffusion: sd.md
+  - Applied Stable Diffusion: applied-stable-diffusion.md
+  - Samplers: samplers.md
+  - Prompting: prompting.md
+  - Dream Booth: dream-booth.md
+  - Cross-attention: cross-attention.md
+  - Glossary: glossary.md
+
+theme: readthedocs
