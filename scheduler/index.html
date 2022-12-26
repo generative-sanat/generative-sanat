@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Mert Cobanov" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Scheduler - Generative Sanat</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Scheduler";
+        var mkdocs_page_input_path = "scheduler.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Generative Sanat
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Hello</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../ldm/">What is Latent Diffusion</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../vit/">ViT Visual Transformers</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../vae/">VAE</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Scheduler</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#uygulama">Uygulama</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gurultu-eklemek">Gurultu Eklemek</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#sampling-steps-0-10-20-25-27-29">Sampling steps: [0, 10, 20, 25, 27, 29]</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scheduler-tipleri">Scheduler Tipleri</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#lessons-learned-schedulers">Lessons Learned Schedulers</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../sd/">Stable Diffusion</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../applied-stable-diffusion/">Applied Stable Diffusion</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../samplers.md">Samplers</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../prompting.md">Prompting</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dream-booth/">Dream Booth</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../cross-attention/">Cross-attention</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Generative Sanat</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+      <li>Scheduler</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="scheduler">Scheduler</h1>
+<p>Scheduler, sampler ayni anlamlarda kullaniliyor.</p>
+<p>Diffusion prosesinde ana amacimiz fotografa yavas yavas gurultu eklemek ve her adimda modelin bu gurultuyu nasil kaldiracagini ogrenmesini beklemek. Modelin inference asamasinda verdigimiz random noise inputu kaldirarak goruntu olusturmasini istiyoruz. Goruntulere gurultu ekleme sureci lineer olmayan bir sekilde gerceklesiyor.</p>
+<p>Noise Schedule, farklı zaman adımlarında ne kadar gürültü ekleneceğini beliyor. Scheduler orneklerinden birisi 'DDPM' ("Denoising Difüzyon Probabalistic Models") makalesini buradan okuyabilirsiniz.</p>
+<p><img alt="scoresde" src="https://theaisummer.com/static/d007d60f773b61f4585cbec3869490d5/a878e/score-sde.png" /></p>
+<p>Stable diffusion modeli icin bu noise ekleme sureci lineer olarak gerceklesmiyor, asagidaki gorselden gorebileceginiz gibi lineer bir gurultu ekleme sureci fotografin cok hizli bir sekilde pure noise formuna gecmesine sebebiyet veriyor bu yuzden, cosine kullaniyoruz.</p>
+<p><img alt="varschedule" src="https://theaisummer.com/static/074ccf8c4830e7cdf07c68a0f1ef1864/2e195/variance-schedule.png" /></p>
+<p>Temel olarak schedule iki gorevden sorumludur:</p>
+<ul>
+<li>Goruntuye timestampler ile birlikte iterative olarak gurultu eklemek</li>
+<li>Fotograftaki gurultu kaldirilirken bir sonraki timestampde goruntunun nasil guncellenecegini belirlemek</li>
+</ul>
+<h2 id="uygulama">Uygulama</h2>
+<p>Scheduler'in nasil calistigina bakalim, egitim esnasinda 1000 step egittigimizi dusunelim.</p>
+<pre><code class="language-python">from diffusers import AutoencoderKL, LMSDiscreteScheduler, UNet2DConditionModel
+import matplotlib.pyplot as plt
+
+scheduler = LMSDiscreteScheduler(beta_start=0.00085, beta_end=0.012, beta_schedule=&quot;scaled_linear&quot;, num_train_timesteps=1000)
+
+# Setting the number of sampling steps:
+scheduler.set_timesteps(15)
+
+# See these in terms of the original 1000 steps used for training:
+print(scheduler.timesteps)
+# tensor([999.0000, 927.6429, 856.2857, 784.9286, 713.5714, 642.2143, 570.8571,
+#        499.5000, 428.1429, 356.7857, 285.4286, 214.0714, 142.7143,  71.3571,
+#          0.0000], dtype=torch.float64)
+
+# Look at the equivalent noise levels:
+print(scheduler.sigmas)
+# tensor([14.6146,  9.6826,  6.6780,  4.7746,  3.5221,  2.6666,  2.0606,  1.6156,
+#         1.2768,  1.0097,  0.7913,  0.6056,  0.4397,  0.2780,  0.0292,  0.0000])
+</code></pre>
+<p>Sigma parametresi goruntunun latent representasyonuna ne kadar gurultu eklendigini gosteriyor.</p>
+<pre><code class="language-python"># Plotting this noise schedule:
+plt.plot(scheduler.sigmas)
+plt.title('Noise Schedule')
+plt.xlabel('Sampling step')
+plt.ylabel('sigma')
+plt.show()
+</code></pre>
+<p><img alt="" src="../assets/noise.png" /></p>
+<h2 id="gurultu-eklemek">Gurultu Eklemek</h2>
+<p>Gorselmimize gurultu eklemenin nasil oldugunu gorsellestirelim.
+Autoencoder adiminda gorselimizin VAE'den gectikten sonraki encoded halini yani latent representationini cikartmistik.</p>
+<pre><code class="language-python">noise = torch.randn_like(encoded) # Random noise
+sampling_step = 10 # Equivalent to step 10 out of 15 in the schedule above
+# encoded_and_noised = scheduler.add_noise(encoded, noise, timestep) # Diffusers 0.3 and below
+encoded_and_noised = scheduler.add_noise(encoded, noise, timesteps=torch.tensor([scheduler.timesteps[sampling_step]]))
+latents_to_pil(encoded_and_noised.float())[0] # Display
+</code></pre>
+<h3 id="sampling-steps-0-10-20-25-27-29">Sampling steps: [0, 10, 20, 25, 27, 29]</h3>
+<p><img alt="sampling-steps" src="../assets/scheduler-steps2.jpg" /></p>
+<h2 id="scheduler-tipleri">Scheduler Tipleri</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ddim</td>
+<td>Denoising Diffusion Implicit Models</td>
+</tr>
+<tr>
+<td>ddpm</td>
+<td>Denoising Diffusion Probabilistic Models</td>
+</tr>
+<tr>
+<td>singlestep_dpm_solver</td>
+<td>Singlestep DPM-Solver</td>
+</tr>
+<tr>
+<td>multistep_dpm_solver</td>
+<td>Multistep DPM-Solver</td>
+</tr>
+<tr>
+<td>heun</td>
+<td>Heun scheduler inspired by Karras et. al paper</td>
+</tr>
+<tr>
+<td>dpm_discrete</td>
+<td>DPM Discrete Scheduler inspired by Karras et. al paper</td>
+</tr>
+<tr>
+<td>dpm_discrete_ancestral</td>
+<td>DPM Discrete Scheduler with ancestral sampling inspired by Karras et. al paper</td>
+</tr>
+<tr>
+<td>stochastic_karras_ve</td>
+<td>Variance exploding, stochastic sampling from Karras et. al</td>
+</tr>
+<tr>
+<td>lms_discrete</td>
+<td>Linear multistep scheduler for discrete beta schedules</td>
+</tr>
+<tr>
+<td>pndm</td>
+<td>Pseudo numerical methods for diffusion models (PNDM)</td>
+</tr>
+<tr>
+<td>score_sde_ve</td>
+<td>variance exploding stochastic differential equation (VE-SDE) scheduler</td>
+</tr>
+<tr>
+<td>ipndm</td>
+<td>improved pseudo numerical methods for diffusion models (iPNDM)</td>
+</tr>
+<tr>
+<td>score_sde_vp</td>
+<td>Variance preserving stochastic differential equation (VP-SDE) scheduler</td>
+</tr>
+<tr>
+<td>euler</td>
+<td>Euler scheduler</td>
+</tr>
+<tr>
+<td>euler_ancestral</td>
+<td>Euler Ancestral scheduler</td>
+</tr>
+<tr>
+<td>vq_diffusion</td>
+<td>VQDiffusionScheduler</td>
+</tr>
+<tr>
+<td>repaint</td>
+<td>RePaint scheduler</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lessons-learned-schedulers">Lessons Learned Schedulers</h2>
+<p>There are ancestral samplers (marked by the letter "a") whose output will keep changing as the number of steps increases, and the others, which will eventually settle on a final image. This final image is different between Karras and non-Karras samplers, but very similar within those groups.</p>
+<p>Then there's DPM fast, which doesn't feel particularly fast, and which always seems to produce inferior images for me.</p>
+<p>DPM adaptive is also its own thing, as it ignores step count and works with cfg scale instead. More cfg = more steps. I kind of like it when I'm not sure how many steps I should use, but the final step count is generally high. It can also take a long, long time if you use the "AND" prompt syntax - I have interrupted it after waiting for over 2000 steps.</p>
+<p>Most differences between the different samplers appear at low step counts &lt; 20. Some produce distinguishable images faster and some slower, and may look very different in the early stages. That's random though, there's no good way to predict what those early images will turn into with more steps.</p>
+<p>In practice, the choice of samplers is just preference, there's actually very little difference in the long run.</p>
+<p>First, you have to understand what samplers are. These are discretized differential equations. I'm not going to go into these at all in this post, but I've covered them before.</p>
+<p>DDIM and PLMS were the original samplers. They were part of Latent Diffusion's repository. They stand for the papers that introduced them, Denoising Diffusion Implicit Models and Pseudo Numerical Methods for Diffusion Models on Manifolds.</p>
+<p>Almost all other samplers come from work done by @RiversHaveWings or Katherine Crowson, which is mostly contained in her work at this repository. She is listed as the principal researcher at Stability AI. Her notes for those samplers are as follows:</p>
+<p>⁠Euler - Implements Algorithm 2 (Euler steps) from Karras et al. (2022)
+⁠Euler_a - Ancestral sampling with Euler method steps.
+⁠LMS - No information, but can be inferred that the name comes from linear multistep coefficients
+⁠Heun - Implements Algorithm 2 (Heun steps) from Karras et al. (2022).
+⁠DPM2 - A sampler inspired by DPM-Solver-2 and Algorithm 2 from Karras et al. (2022).
+⁠DPM2 a - Ancestral sampling with DPM-Solver second-order steps
+⁠DPM++ 2s a - Ancestral sampling with DPM-Solver++(2S) second-order steps
+⁠DPM++ 2M - DPM-Solver++(2M)
+⁠DPM++ SDE - DPM-Solver++ (stochastic)
+⁠DPM fast - DPM-Solver-Fast (fixed step size). See <a href="https://arxiv.org/abs/2206.00927">https://arxiv.org/abs/2206.00927</a>
+⁠DPM adaptive - DPM-Solver-12 and 23 (adaptive step size). See <a href="https://arxiv.org/abs/2206.00927">https://arxiv.org/abs/2206.00927</a>
+The 'Karras' versions of these weren't made by Karras as far as I can tell, but instead are using a variance-exploding scheduler from the Karras paper, which of course is extra confusing given that most of the other samplers were inspired by that paper in the first place.</p>
+<p>In terms of "what will I get at high step counts", most of the time you will get similar pictures from:</p>
+<p>⁠Group A: Euler_a, DPM2 a, DPM++ 2S a, DPM fast (after many steps), DPM adaptive, DPM2 a Karras
+⁠Group B: Euler, LMS, Heun, DPM2, DPM++ 2M, DDIM, PLMS
+⁠Group C: LMS Karras, DPM2 Karras, DPM++ 2M Karras
+As far as convergence behavior:</p>
+<p>⁠Does not converge: Euler_a, DPM2 a, DPM Fast, DDIM, PLMS, DPM adaptive, DPM2 a Karras
+⁠Converges: Euler, LMS, Heun, DPM2, DPM++ 2M, LMS Karras, DPM2 Karras, DPM++ 2M Karras
+By required steps:</p>
+<p>⁠Euler_a = Euler = DPM++2M = LMS Karras (image degraded at high steps) &gt;
+⁠LMS = DPM++ 2M Karras = Heun (slower) = DPM++ 2S a (slower) = DPM++ 2S a Karras &gt;
+⁠DDIM = PLMS = DPM2 (slower) = DPM 2 Karras&gt;
+⁠DPM Fast = DPM2 a (slower)
+These all give somewhat different results so a person could prefer the output of any of the models at a given CFG or step range. I do think that there is an argument to be made that DPM++ 2M and Euler_a are good generic samplers for most people, however, as they both resolve to a good picture at low seeds (sub-20) without a hit to iteration speed. DPM++ 2M has the advantage of converging to a single image more often (if you choose to run the same image at higher seed), but is slightly more prone to deformations at high CFG.</p>
+<p>To combine all the above:</p>
+<p>⁠Fast, new, converges: DPM++ 2M, DPM++ 2M Karras
+⁠Fast, doesn't converge: Euler_a, DPM2 a Karras
+⁠Others worth considering: DPM2 a, LMS, DPM++ 2S a Karras
+⁠Bugged: LMS Karras (at high steps
+⁠Older, fast but maybe lower quality final result: Euler, LMS, Heun
+⁠Slow: DDIM, PLMS, DPM2, DPM 2 Karras, DPM Fast, DPM2 a
+TL;DR</p>
+<p>These are confusingly named and mostly come from academic papers. The actual mechanisms of each sampler aren't really relevant to their outputs. In general PLMS, DDIM, or DPM fast are slower and give worse results.</p>
+<p>Instead, try out DPM++ 2M and Euler_a, along with DPM++ 2M Karras. These should all give good results at a low seed value.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../vae/" class="btn btn-neutral float-left" title="VAE"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../sd/" class="btn btn-neutral float-right" title="Stable Diffusion">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../vae/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../sd/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>

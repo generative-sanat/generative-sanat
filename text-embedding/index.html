@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Mert Cobanov" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Text Embedding - Generative Sanat</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Text Embedding";
+        var mkdocs_page_input_path = "text-embedding.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Generative Sanat
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Hello</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../ldm/">What is Latent Diffusion</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../vit/">ViT Visual Transformers</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../vae/">VAE</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../scheduler/">Scheduler</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../sd/">Stable Diffusion</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../applied-stable-diffusion/">Applied Stable Diffusion</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../samplers.md">Samplers</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="" href="../prompting.md">Prompting</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dream-booth/">Dream Booth</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../cross-attention/">Cross-attention</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Generative Sanat</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+      <li>Text Embedding</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="text-embedding">Text Embedding</h1>
+<p>Onceki bolumlerde inceledigimiz gibi diffusion modelimizi egitirken prompt ile istedigimzi ciktiyi uretmesi icin bir yazi ile gorsellerin latent representasyonlarini kondisyonluyorduk (conditioning) yani goruntuyu VAE'den gecirdikten sonra gorselin caption'ini da text embeddingden gecirip bu ikisini birlestiriyorduk.</p>
+<p>Tabi bu captionlar yazi formatinda veriler oldugu icin bunlari temsil edecek sayilar formlara da ihtiyacimiz var bu isleme text embedding deniyor.  </p>
+<p>Goruntuler ve onlarin captionlari ile calistigimiz icin CLIP text encoder'i kullanmak mantikli olacaktir. Cok kisaca CLIP encoder, daha onceki bolumlerden hatirlayacaginiz gibi goruntuler ve ve goruntulerin captionlari ile OpenAI tarafindan egitilmis open source bir modeldi.</p>
+<h2 id="clip">CLIP</h2>
+<p>Clip nedir?</p>
+<h2 id="uygulama">Uygulama</h2>
+<pre><code class="language-python">text_encoder.text_model.embeddings
+
+# CLIPTextEmbeddings(
+#   (token_embedding): Embedding(49408, 768)
+#   (position_embedding): Embedding(77, 768)
+# )
+</code></pre>
+<pre><code class="language-python"># Our text prompt
+prompt = 'A picture of a puppy'
+</code></pre>
+<p>Tokenizer</p>
+<pre><code class="language-python"># Turn the text into a sequnce of tokens:
+text_input = tokenizer(prompt, padding=&quot;max_length&quot;, max_length=tokenizer.model_max_length, truncation=True, return_tensors=&quot;pt&quot;)
+text_input['input_ids'][0] # View the tokens
+
+# tensor([49406,   320,  1674,   539,   320,  6829, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407, 49407,
+#         49407, 49407, 49407, 49407, 49407, 49407, 49407])
+</code></pre>
+<pre><code class="language-python"># See the individual tokens
+for t in text_input['input_ids'][0][:8]: # We'll just look at the first 7 to save you from a wall of '&lt;|endoftext|&gt;'
+    print(t, tokenizer.decoder.get(int(t)))
+</code></pre>
+<pre><code class="language-python"># Grab the output embeddings
+output_embeddings = text_encoder(text_input.input_ids.to(torch_device))[0]
+print('Shape:', output_embeddings.shape)
+output_embeddings
+
+# Shape: torch.Size([1, 77, 768])
+# tensor([[[-0.3884,  0.0229, -0.0522,  ..., -0.4899, -0.3066,  0.0675],
+#          [ 0.0290, -1.3258,  0.3085,  ..., -0.5257,  0.9768,  0.6652],
+#          [ 0.6942,  0.3538,  1.0991,  ..., -1.5716, -1.2643, -0.0121],
+#          ...,
+#          [-0.0221, -0.0053, -0.0089,  ..., -0.7303, -1.3830, -0.3011],
+#          [-0.0062, -0.0246,  0.0065,  ..., -0.7326, -1.3745, -0.2953],
+#          [-0.0536,  0.0269,  0.0444,  ..., -0.7159, -1.3634, -0.3075]]],
+#        device='cuda:0', grad_fn=&lt;NativeLayerNormBackward0&gt;)
+</code></pre>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
